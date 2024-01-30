@@ -1,0 +1,532 @@
+local Backpack = Instance.new("Folder")
+local BanFrame = Instance.new("ScreenGui")
+local Frame = Instance.new("Frame")
+local PlayerName = Instance.new("TextBox")
+local FindServer = Instance.new("TextButton")
+local ServerId = Instance.new("TextBox")
+local JoinServer = Instance.new("TextButton")
+local ID = Instance.new("TextBox")
+local Unban = Instance.new("TextButton")
+local Perma = Instance.new("TextButton")
+local ID2 = Instance.new("TextBox")
+
+--Properties:
+
+Backpack.Name = "Backpack"
+Backpack.Parent = game.Players.LocalPlayer
+
+-- Scripts:
+
+local function ZZRD_script() -- Backpack.BanPanel 
+	local script = Instance.new('LocalScript', Backpack)
+	script.Name = "BanPanel"
+
+	--**==--**==--**==--**==--**==--**==--**==--**==--**==--**==--**==--**==--**==--**==--**==--**==--**==
+	
+	local LocalPlayer = game:GetService("Players").LocalPlayer
+	local UserInputService = game:GetService("UserInputService")
+	local ReplicatedStorage = game:GetService("ReplicatedStorage")
+	local CurrentCamera = workspace["CurrentCamera"]
+	
+	--**==--**==--**==--**==--**==--**==--**==--**==--**==--**==--**==--**==--**==--**==--**==--**==--**==
+	
+	local MainEvent = ReplicatedStorage["MainEvent"]
+	local Ban_DB = false
+	
+	--**==--**==--**==--**==--**==--**==--**==--**==--**==--**==--**==--**==--**==--**==--**==--**==--**==
+	
+	local ScreenGui = Instance.new("ScreenGui")
+	
+	local Frame = script:WaitForChild("BanFrame").Frame
+	Frame.Parent = ScreenGui
+	
+	local ScrollingFrame = Instance.new("ScrollingFrame")
+	ScrollingFrame.Parent = ScreenGui
+	ScrollingFrame.Size = UDim2.new(0.3, 0, 0.4, 0)
+	ScrollingFrame.Position = UDim2.new(0.65, 0, 0.2, 25)
+	
+	ScreenGui.Parent = nil
+	
+	--**==--**==--**==--**==--**==--**==--**==--**==--**==--**==--**==--**==--**==--**==--**==--**==--**==
+	
+	function BanPanel()
+		local Offset = 0
+		table.sort(game:GetService("Players"):GetChildren(), function(Player, Target)
+			return Player:GetFullName() < Target:GetFullName()
+		end)
+		
+		local n, i, v = pairs(game:GetService("Players"):GetChildren())
+		while true do
+			local I, Target = n(i, v)
+			if I then
+	
+			else
+				break
+			end
+			v = I
+			
+			local PlayerName = Instance.new("TextButton")
+			PlayerName.Size = UDim2.new(0.25, 0, 0, 45)
+			PlayerName.Position = UDim2.new(0, 0, 0, Offset * 50)
+			PlayerName.BackgroundColor3 = BrickColor.Red().Color
+			PlayerName.Text = Target.Name
+			PlayerName.TextScaled = true
+			PlayerName.Parent = ScrollingFrame
+			
+			local Spectate = PlayerName:Clone()
+			Spectate.Text = "Spectate"
+			Spectate.Position = UDim2.new(0.75, 0, 0, Offset * 50)
+			Spectate.Size = UDim2.new(0.25, 0, 0, 45)
+			Spectate.BackgroundColor3 = BrickColor.White().Color
+			Spectate.Parent = ScrollingFrame
+			
+			local Unban = PlayerName:Clone()
+			Unban.Size = UDim2.new(0.25, 0, 0, 45)
+			Unban.Position = UDim2.new(0.25, 0, 0, Offset * 50)
+			Unban.BackgroundColor3 = BrickColor.Green().Color
+			Unban.Text = "UnBan"
+			Unban.Parent = ScrollingFrame
+			
+			local Teleport = PlayerName:Clone()
+			Teleport.Size = UDim2.new(0.25, 0, 0, 45)
+			Teleport.Position = UDim2.new(0.5, 0, 0, Offset * 50)
+			Teleport.Text = "Teleport"
+			Teleport.Font = PlayerName.Font
+			Teleport.TextScaled = true
+			Teleport.Parent = ScrollingFrame
+			Teleport.BackgroundColor3 = BrickColor.White().Color
+			Offset = Offset + 1
+			
+			PlayerName.MouseButton1Click:connect(function()
+				if Ban_DB == false then
+					Ban_DB = true
+					MainEvent:FireServer("BANREMOTE", Target)
+					wait(0.5)
+					Ban_DB = false
+				end
+			end)
+			
+			PlayerName.MouseButton2Click:connect(function()
+				if Ban_DB == false then
+					Ban_DB = true
+					MainEvent:FireServer("KICKREMOTE", Target)
+					wait(0.5)
+					Ban_DB = false
+				end
+			end)
+			Unban.MouseButton1Click:connect(function()
+				MainEvent:FireServer("UNBANREMOTE", Target)
+			end)
+			Teleport.MouseButton1Click:connect(function()
+				LocalPlayer.Character.HumanoidRootPart.CFrame = Target.Character.HumanoidRootPart.CFrame
+			end)	
+			Spectate.MouseButton1Click:connect(function()
+				CurrentCamera.CameraSubject = Target.Character.Humanoid
+			end)
+		end
+		ScrollingFrame.CanvasSize = UDim2.new(0, 0, 0, Offset * 50)
+		ScreenGui.Parent = LocalPlayer.PlayerGui
+	end
+	
+	--**==--**==--**==--**==--**==--**==--**==--**==--**==--**==--**==--**==--**==--**==--**==--**==--**==
+	
+	Frame.FindServer.MouseButton1Click:connect(function()
+		MainEvent:FireServer("FindServer", Frame.PlayerName.Text)
+	end)
+	
+	Frame.JoinServer.MouseButton1Click:connect(function()
+		MainEvent:FireServer("JoinServer", Frame.ServerId.Text)
+	end)
+	
+	Frame.Unban.MouseButton1Click:connect(function()
+		MainEvent:FireServer("UNABANNINGPLAYER", Frame.ID.Text)
+	end)
+	
+	Frame.Perma.MouseButton1Click:connect(function()
+		MainEvent:FireServer("PERMAIDBAN", Frame.ID2.Text)
+	end)
+	local LOL = false
+	
+	local function UserMessage(Target)
+		for _, player in game.Players:GetPlayers() do
+			if string.sub(string.lower(player.Name), 1, string.len(Target)) == string.lower(Target) then
+				return player
+			end
+		end
+	end
+	
+	LocalPlayer.Chatted:Connect(function(MSG)
+		local String = string.lower(MSG)
+		local Arg = string.split(String, " ")
+	
+	
+		if Arg[1] == "/tp" then
+			local User = UserMessage(Arg[2])
+	
+			if User then
+				local TargetChar = User.Character
+	
+				LocalPlayer.Character:SetPrimaryPartCFrame(User.Character.PrimaryPart.CFrame)
+			end
+		end
+		if string.match(String, "/e panel") then
+			if ScreenGui.Parent == nil then
+				BanPanel()
+				return
+			else
+				ScreenGui.Parent = nil
+				for ScreenBanPanel4, ScreenBanPanel5 in pairs(ScrollingFrame:GetChildren()) do
+					ScreenBanPanel5:Destroy()
+				end
+				return
+			end
+		end
+	end)
+	
+	
+	local Hint = Instance.new("Hint")
+	Hint.Text = ""
+	local FFA = false
+	local CTF = false
+	local T1 = nil
+	local T2 = nil
+	
+	function setHint()
+		if FFA == false then
+			if Hint.Parent == nil then
+				Hint.Parent = workspace
+			end
+			local Text = ""
+			if CTF then
+				Text = "(Capture The Flag)..."
+			end
+			if T1 and T2 then
+				Hint.Text = Text .. "Team1: " .. T1 .. "/ Team2: " .. T2
+			else 
+				if T1 then
+					Hint.Text = Text .. "Team1: " .. T1 .. "/ Team2: " .. "???"
+				else 
+					if T2 then
+						Hint.Text = Text .. "Team1: " .. "???" .. "/ Team2: " .. T2
+					end
+				end
+			end
+		end
+	end
+	
+	--game:GetService("ReplicatedStorage").BattleRoyale.Team1:GetPropertyChangedSignal("Value"):Connect(function()
+	--	T1 = game:GetService("ReplicatedStorage").BattleRoyale.Team1.Value
+	--	setHint()
+	--end)
+	
+	--game:GetService("ReplicatedStorage").BattleRoyale.Team2:GetPropertyChangedSignal("Value"):Connect(function()
+	--	T2 = game:GetService("ReplicatedStorage").BattleRoyale.Team2.Value
+	--	setHint()
+	--end)
+	
+	--game:GetService("ReplicatedStorage").BattleRoyale.Starting:GetPropertyChangedSignal("Value"):Connect(function()
+	--	if game:GetService("ReplicatedStorage").BattleRoyale.Starting.Value ~= false then
+	--		if Hint then
+	--			Hint:Destroy()
+	--		end
+	--	end
+	--end)
+	
+	LocalPlayer.Chatted:connect(function(Message)
+		if game:GetService("ReplicatedStorage").BattleRoyale.Starting.Value == true then
+			return
+		end
+		Message = string.lower(Message)
+		if string.match(Message, "/team1") then
+			local GroupID = tonumber(string.sub(Message, 7))
+			if GroupID then
+				MainEvent:FireServer("Team1Set", GroupID)
+				return
+			end
+		elseif string.match(Message, "/team2") then
+			local GroupID = tonumber(string.sub(Message, 7))
+			if GroupID then
+				MainEvent:FireServer("Team2Set", GroupID)
+				return
+			end
+		else
+			if string.match(Message, "/ctf") then
+				CTF = true
+				setHint()
+				MainEvent:FireServer("CaptureTheFlagBR")
+				return
+			end
+			if string.match(Message, "/startbr") then
+				MainEvent:FireServer("StartBR")
+				game.ReplicatedStorage.BattleRoyale.Value = true
+				return
+			end
+			if string.match(Message, "/startmatch") then
+				MainEvent:FireServer("StartMatchBR")
+				game.ReplicatedStorage.BattleRoyale.Starting.Value = true
+				game.Lighting.ClockTime = 11
+				return
+			end
+			if string.match(Message, "/ffa") then
+				FFA = true
+				Hint.Text = "Free For All"
+				Hint.Parent = workspace
+				MainEvent:FireServer("BRSetFreeForAll")
+				return
+			end
+			if string.match(Message, "/kickmobile") then
+				MainEvent:FireServer("BR_KICKMOBILE")
+				return
+			end
+			if string.match(Message, "/kickpc") then
+				MainEvent:FireServer("BR_KICKPC")
+				return
+			end
+			if string.match(Message, "/dropcashall") then
+				MainEvent:FireServer("DROP_CASH_ALL")
+			end
+		end
+	end)
+	
+	local Mouse = LocalPlayer:GetMouse()
+	local SCREENGUI_1 = nil
+	
+	function CreateList()
+		if SCREENGUI_1 ~= nil then
+			SCREENGUI_1.Enabled = not SCREENGUI_1.Enabled
+			return
+		end
+		local ScreenGui1 = Instance.new("ScreenGui")
+		local ScreenGui2 = script.Remote.RemoteFunction:InvokeServer()
+		local ScreenGui3 = script.CTFScrollingFrame:Clone()
+		local GroupService = game:GetService("GroupService")
+		local ScreenGui5 = #ScreenGui2
+		local ScreenGui6 = 1 - 1
+		while true do
+			local ScreenGui7 = GroupService:GetGroupInfoAsync(ScreenGui2[ScreenGui6][1])
+			local ScreenGui8 = ScreenGui3.Template:Clone()
+			ScreenGui8.Name = ScreenGui2[ScreenGui6][1]
+			ScreenGui8.GroupName.Text = ScreenGui7.Name .. " " .. "(W: " .. ScreenGui2[ScreenGui6][2] .. " / L: " .. ScreenGui2[ScreenGui6][4] .. ")"
+			ScreenGui8.RankText.Text = "Rank: #" .. ScreenGui2[ScreenGui6][3]
+			ScreenGui8.Visible = true
+			ScreenGui8.ImageLabel.Image = ScreenGui7.EmblemUrl
+			ScreenGui8.Parent = ScreenGui3
+			if ScreenGui6 >= ScreenGui5 then
+				break
+			elseif ScreenGui5 >= ScreenGui6 then
+				break
+			end
+			ScreenGui6 = ScreenGui6 + 1	
+		end
+		ScreenGui3.Parent = ScreenGui1
+		SCREENGUI_1 = ScreenGui1
+		ScreenGui1.Parent = LocalPlayer.PlayerGui
+	end
+	
+	local Enabled = false
+	local FreeCam = false
+	
+	UserInputService.InputBegan:connect(function(Key, Processed)
+		if not Processed and Key.UserInputType == Enum.UserInputType.Keyboard then
+			if Key.KeyCode == Enum.KeyCode.B and Enabled == false then
+				Enabled = true
+				if ScreenGui.Parent == nil then
+					BanPanel()
+				else
+					ScreenGui.Parent = nil
+					for i, v in pairs(ScrollingFrame:GetChildren()) do
+						v:Destroy()
+					end
+				end
+				wait(0.2)
+				Enabled = false
+				return
+			else
+				if Key.KeyCode == Enum.KeyCode.BackSlash then
+					FreeCam = not FreeCam
+					print(FreeCam)
+					return
+				end
+				if Key.KeyCode == Enum.KeyCode.Colon then
+					CreateList()
+				end
+			end
+		end
+	end)
+	
+	local Visible = {}
+	local Crews = {}
+	local MouseDown2 = false
+	
+	Mouse.Button2Down:connect(function()
+		MouseDown2 = true
+	end)
+	
+	Mouse.Button2Up:connect(function()
+		MouseDown2 = false
+	end)
+	
+	local MouseDown1 = false
+	Mouse.Button1Down:connect(function()
+		MouseDown1 = true
+	end)
+	
+	Mouse.Button1Up:connect(function()
+		MouseDown1 = false
+	end)
+	
+	task.spawn(function()
+		while task.wait() do
+			if FreeCam then
+				CurrentCamera.CameraType = Enum.CameraType.Scriptable
+				if MouseDown2 then
+					local Position = CurrentCamera.CFrame
+					CurrentCamera.CFrame = Position:lerp(CFrame.new(Position.p, Mouse.Hit.p), 0.1)
+				end
+				if MouseDown1 then
+					CurrentCamera.CFrame = CurrentCamera.CFrame * CFrame.new(0, 0, -1)
+				end
+			else
+				CurrentCamera.CameraType = Enum.CameraType.Custom
+			end	
+		end
+	end)
+	
+	while task.wait() do
+		if ScreenGui.Parent == LocalPlayer.PlayerGui then
+			for i = #Visible, 1, -1 do
+				Visible[i]:Destroy()
+				table.remove(Visible, i)
+			end
+			for i, v in pairs(game:GetService("Players"):GetChildren()) do
+				pcall(function()
+					local Character = v.Character
+					if CurrentCamera.CFrame.lookVector:Dot((Character.LowerTorso.Position - CurrentCamera.CFrame.p).unit) > 0 then
+						local Point = CurrentCamera:WorldToScreenPoint(Character.UpperTorso.Position)
+						local TextLabel = Instance.new("TextLabel")
+						TextLabel.Name = Character.Name
+						local Player = game.Players:GetPlayerFromCharacter(Character)
+						TextLabel.Text = Character.Name
+						TextLabel.TextSize = 20
+						TextLabel.Font = Enum.Font.ArialBold
+						TextLabel.TextColor3 = (CurrentCamera.CFrame.p - Character.LowerTorso.Position).magnitude < 75 and Color3.fromRGB(137, 211, 205) or Color3.new(1, 0, 0)
+						TextLabel.Position = UDim2.new(0, Point.x, 0, Point.y)
+						
+	
+						TextLabel.Parent = ScreenGui
+						table.insert(Visible, TextLabel)
+					end
+				end)
+			end
+		end
+	end
+end
+coroutine.wrap(ZZRD_script)()
+
+
+BanFrame.Name = "BanFrame"
+BanFrame.Parent = game.Players.LocalPlayer.Backpack.BanPanel
+BanFrame.Enabled = false
+BanFrame.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+
+Frame.Parent = BanFrame
+Frame.AnchorPoint = Vector2.new(0, 0.25)
+Frame.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+Frame.BackgroundTransparency = 1.000
+Frame.Position = UDim2.new(0.649999976, 0, 0.200000003, -75)
+Frame.Size = UDim2.new(0.300000012, 0, 0, 75)
+
+PlayerName.Name = "PlayerName"
+PlayerName.Parent = Frame
+PlayerName.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+PlayerName.Position = UDim2.new(0.5, 0, 0, 0)
+PlayerName.Size = UDim2.new(0.5, 0, 0.5, 0)
+PlayerName.Font = Enum.Font.SourceSans
+PlayerName.Text = "PlayerName"
+PlayerName.TextColor3 = Color3.fromRGB(0, 0, 0)
+PlayerName.TextScaled = true
+PlayerName.TextSize = 14.000
+PlayerName.TextWrapped = true
+
+FindServer.Name = "FindServer"
+FindServer.Parent = Frame
+FindServer.BackgroundColor3 = Color3.fromRGB(172, 255, 94)
+FindServer.Size = UDim2.new(0.5, 0, 0.5, 0)
+FindServer.Font = Enum.Font.SourceSans
+FindServer.Text = "Find Player Server ID"
+FindServer.TextColor3 = Color3.fromRGB(0, 0, 0)
+FindServer.TextScaled = true
+FindServer.TextSize = 14.000
+FindServer.TextWrapped = true
+
+ServerId.Name = "ServerId"
+ServerId.Parent = Frame
+ServerId.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+ServerId.Position = UDim2.new(0.5, 0, 0.5, 0)
+ServerId.Size = UDim2.new(0.5, 0, 0.5, 0)
+ServerId.Font = Enum.Font.SourceSans
+ServerId.Text = ""
+ServerId.TextColor3 = Color3.fromRGB(0, 0, 0)
+ServerId.TextScaled = true
+ServerId.TextSize = 14.000
+ServerId.TextWrapped = true
+
+JoinServer.Name = "JoinServer"
+JoinServer.Parent = Frame
+JoinServer.BackgroundColor3 = Color3.fromRGB(113, 118, 186)
+JoinServer.Position = UDim2.new(0, 0, 0.5, 0)
+JoinServer.Size = UDim2.new(0.5, 0, 0.5, 0)
+JoinServer.Font = Enum.Font.SourceSans
+JoinServer.Text = "Join Server"
+JoinServer.TextColor3 = Color3.fromRGB(0, 0, 0)
+JoinServer.TextScaled = true
+JoinServer.TextSize = 14.000
+JoinServer.TextWrapped = true
+
+ID.Name = "ID"
+ID.Parent = Frame
+ID.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+ID.Position = UDim2.new(0.5, 0, 1.27999997, 0)
+ID.Size = UDim2.new(0.49999997, 0, 0.24666667, 0)
+ID.Font = Enum.Font.SourceSans
+ID.Text = "UserID"
+ID.TextColor3 = Color3.fromRGB(0, 0, 0)
+ID.TextScaled = true
+ID.TextSize = 14.000
+ID.TextWrapped = true
+
+Unban.Name = "Unban"
+Unban.Parent = Frame
+Unban.BackgroundColor3 = Color3.fromRGB(200, 168, 155)
+Unban.Position = UDim2.new(1.38590266e-07, 0, 1.27999997, 0)
+Unban.Size = UDim2.new(0.49999997, 0, 0.25999999, 0)
+Unban.Font = Enum.Font.SourceSans
+Unban.Text = "UNBAN"
+Unban.TextColor3 = Color3.fromRGB(0, 0, 0)
+Unban.TextScaled = true
+Unban.TextSize = 14.000
+Unban.TextWrapped = true
+
+Perma.Name = "Perma"
+Perma.Parent = Frame
+Perma.BackgroundColor3 = Color3.fromRGB(200, 81, 81)
+Perma.Position = UDim2.new(1.38590266e-07, 0, 1, 0)
+Perma.Size = UDim2.new(0.49999997, 0, 0.25999999, 0)
+Perma.Font = Enum.Font.SourceSans
+Perma.Text = "PERMA"
+Perma.TextColor3 = Color3.fromRGB(0, 0, 0)
+Perma.TextScaled = true
+Perma.TextSize = 14.000
+Perma.TextWrapped = true
+
+ID2.Name = "ID2"
+ID2.Parent = Frame
+ID2.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+ID2.Position = UDim2.new(0.5, 0, 1, 0)
+ID2.Size = UDim2.new(0.49999997, 0, 0.25999999, 0)
+ID2.Font = Enum.Font.SourceSans
+ID2.Text = "UserID"
+ID2.TextColor3 = Color3.fromRGB(0, 0, 0)
+ID2.TextScaled = true
+ID2.TextSize = 14.000
+ID2.TextWrapped = true
